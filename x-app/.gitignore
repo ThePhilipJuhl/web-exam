@@ -1,0 +1,14 @@
+# Configuration files with sensitive data
+config.py
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Flask session files
+flask_session/
+
+# Environment variables
+.env
+.env.local

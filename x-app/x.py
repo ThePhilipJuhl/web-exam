@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from functools import wraps
 
 import json
+import config
 
 
 from icecream import ic
@@ -142,8 +143,9 @@ def send_email(to_email, subject, template):
         # Email and password of the sender's Gmail account
         # ---------------------------------
 
-        sender_email = "philipjuhl554@gmail.com"
-        password = "btjz zgyz qgop hiug"
+
+        sender_email = config.EMAIL_KEY
+        password = config.EMAIL_KEY_PASS
         receiver_email = to_email
         
         message = MIMEMultipart()
