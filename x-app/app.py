@@ -48,7 +48,7 @@ def global_variables():
         x = x
     )
 
-###test###
+###testing###
 ##############################
 @app.route("/login", methods=["GET", "POST"])
 @app.route("/login/<lan>", methods=["GET", "POST"])
