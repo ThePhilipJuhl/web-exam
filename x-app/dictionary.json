@@ -68,5 +68,90 @@
         "english": "user not verified",
         "danish": "bruger ikke verificeret ",
         "spanish": "kom again nonce"
+    },
+    "profile": {
+        "english": "Profile",
+        "danish": "Profil",
+        "spanish": "la profilio"
+    },
+    "Notifications": {
+        "english": "Notifications",
+        "danish": "Notifikationer",
+        "spanish": "la notifiko"
+    },
+    "Messages": {
+        "english": "Messages",
+        "danish": "Beskeder",
+        "spanish": "La beskedo"
+    },
+    "Bookmarks": {
+        "english": "Bookmarks",
+        "danish": "Bogmærkeringer",
+        "spanish": "labookimark"
+    },
+    "Jobs": {
+        "english": "Jobs",
+        "danish": "Job",
+        "spanish": "la getto job"
+    },
+    "Communities": {
+        "english": "Communities",
+        "danish": "Fælleskab",
+        "spanish": "Fælleskabitto"
+    },
+    "Premium": {
+        "english": "Premium",
+        "danish": "Præmium",
+        "spanish": "Præmivito"
+    },
+    "Explore": {
+        "english": "Explore",
+        "danish": "Opdag",
+        "spanish": "Exploritto"
+    },
+    "Search_X": {
+        "english": "Search X",
+        "danish": "Søg på X",
+        "spanish": "searchito xo"
+    },
+    "Whats_happening_now": {
+        "english": "Whats_happening_now",
+        "danish": "Hvad sker der nu",
+        "spanish": "Whatso happeningo "
+    },
+    "More_news": {
+        "english": "More_news",
+        "danish": "Flere nyheder",
+        "spanish": "moro newso "
+    },
+    "Who_to_follow": {
+        "english": "Who to follow",
+        "danish": "Hvem skal du følge",
+        "spanish": "hvororo followo"
+    },
+    "Show_more": {
+        "english": "Show more ",
+        "danish": "vis flere",
+        "spanish": "showowowo morro"
+    },
+    "More": {
+        "english": "More ",
+        "danish": "Mere",
+        "spanish": "Mororoor"
+    },
+    "Logout": {
+        "english": "Logout",
+        "danish": "Log ud ",
+        "spanish": "logogo outto"
+    },
+    "Search": {
+        "english": "Search",
+        "danish": "Søg",
+        "spanish": "Searcho mucho"
+    },
+    "Post": {
+        "english": "Post",
+        "danish": "Slå op ",
+        "spanish": "Sloch mocho"
     }
 }
