@@ -132,6 +132,22 @@ def validate_post(post = ""):
 
 
 ##############################
+def validate_search_for():
+    search_for = request.form.get("search_for", "").strip()
+
+    if not search_for:
+        raise Exception("empty search", 400)
+
+    if len(search_for) > 20:
+        raise Exception("search too long", 400)
+
+    # ONLY ALLOW SIMPLE CHARACTERS NO WILDCARDS 
+    if not re.match(r"^[a-zA-Z0-9._\-!@#$%^&*()\\//\"']+$", search_for):
+        raise Exception("Invalid characters in search", 400)
+    return search_for
+
+
+##############################
 def send_email(to_email, subject, template):
     try:
 

@@ -84,6 +84,7 @@
             <form id="search_form" class="p-relative">
                 <!-- <input mix-post="/api-search" mix-input mix-delay="300" name="search_for" type="text" placeholder="Search Twitter"> -->
                 <input id="txt_search_for" name="search_for" type="text" placeholder="{{ x.lans('Search_X') }}" 
+                maxlength="20" regex="^[a-zA-Z0-9._\-!@#$%^&*()\\//"]+$"
                 oninput="get_search_results('/api-search', 'post', '#search_form', 'parse_search_results')">
                 <button class="cursor-pointer">{{ x.lans("Search") }}</button>                             
             

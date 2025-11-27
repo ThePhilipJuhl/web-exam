@@ -72,13 +72,19 @@ def login(lan = "english"):
             db, cursor = x.db()
             cursor.execute(q, (user_email,))
             user = cursor.fetchone()
-            if not user: raise Exception({{ x.lans("user_not_found") }}, 400)
 
+            # Specific error for when a user is not found 
+            if not user:
+                raise Exception(x.lans("user_not_found"), 400)
+
+            # invalid credentials as a key for not repeating as much 
+            invalid_credentials_msg = x.lans("invalid_credentials")
             if not check_password_hash(user["user_password"], user_password):
-                raise Exception({{ x.lans("invalid_credentials") }}, 400)
+                raise Exception(invalid_credentials_msg, 400)
 
+            # error for when user not verified 
             if user["user_verification_key"] != "":
-                raise Exception({{ x.lans("user_not_verified") }}, 400)
+                raise Exception(x.lans("user_not_verified"), 400)
 
             user.pop("user_password")
 
@@ -405,9 +411,7 @@ def api_update_profile():
 @app.post("/api-search")
 def api_search():
     try:
-        # TODO: The input search_for must be validated
-        search_for = request.form.get("search_for", "")
-        if not search_for: return """empty search field""", 400
+        search_for = x.validate_search_for()
         part_of_query = f"%{search_for}%"
         ic(search_for)
         db, cursor = x.db()
@@ -417,7 +421,12 @@ def api_search():
         return jsonify(users)
     except Exception as ex:
         ic(ex)
-        return str(ex)
+        # User errors
+        if len(ex.args) > 1 and ex.args[1] == 400:
+            return ex.args[0], 400
+
+        # System or developer error
+        return "System under maintenance", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
@@ -473,4 +482,3 @@ def get_data_from_sheet():
         return str(ex)
     finally:
         pass
-    

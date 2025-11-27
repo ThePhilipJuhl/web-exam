@@ -5,7 +5,7 @@
         "spanish": "entrar"
     },
     "dont_have_an_account": {
-        "english": "dont have an accound",
+        "english": "dont have an account",
         "danish": "har du ikke en konto",
         "spanish": "no tienes cuenta"
     },
@@ -15,7 +15,7 @@
         "spanish": "emailia"
     },
     "password": {
-        "english": "passowrd",
+        "english": "passoword",
         "danish": "kodeord",
         "spanish": "Blingblingblong"
     },
@@ -153,5 +153,10 @@
         "english": "Post",
         "danish": "Slå op ",
         "spanish": "Sloch mocho"
+    },
+    "have_an_account": {
+        "english": "Already have an account",
+        "danish": "Har du allerede en konto?",
+        "spanish": "Tienes mucho conto"
     }
 }
