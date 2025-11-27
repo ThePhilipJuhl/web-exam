@@ -1,4 +1,4 @@
-<form id="like_form_{{ post_pk }}" mix-patch="/like-tweet" style="display:inline">
+<form id="liked_form_{{ post_pk }}" mix-patch="/unlike-tweet" style="display:inline">
     <input type="hidden" name="post_pk" value="{{ post_pk }}">
     <button class="action">
         <i class="fa-solid fa-heart" style="color: black;"></i> {{ like_count }}

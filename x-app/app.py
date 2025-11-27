@@ -196,13 +196,11 @@ def home():
                 FROM likes 
                 WHERE likes.like_post_fk = posts.post_pk 
                   AND likes.like_user_fk = %s
-                  AND likes.like_deleted_at IS NULL
             ) AS has_liked,
             (
                 SELECT COUNT(*) 
                 FROM likes 
-                WHERE likes.like_post_fk = posts.post_pk 
-                  AND likes.like_deleted_at IS NULL
+                WHERE likes.like_post_fk = posts.post_pk
             ) AS like_count
         FROM users
         JOIN posts ON user_pk = post_user_fk
@@ -289,13 +287,11 @@ def home_comp():
                 FROM likes 
                 WHERE likes.like_post_fk = posts.post_pk 
                   AND likes.like_user_fk = %s
-                  AND likes.like_deleted_at IS NULL
             ) AS has_liked,
             (
                 SELECT COUNT(*) 
                 FROM likes 
-                WHERE likes.like_post_fk = posts.post_pk 
-                  AND likes.like_deleted_at IS NULL
+                WHERE likes.like_post_fk = posts.post_pk
             ) AS like_count
         FROM users
         JOIN posts ON user_pk = post_user_fk
@@ -349,19 +345,17 @@ def like_tweet():
 
         db, cursor = x.db()
 
-        # Insert like for this user/post, ignore if it already exists
         q = """
-        INSERT IGNORE INTO likes (like_user_fk, like_post_fk, like_created_at, like_deleted_at)
-        VALUES (%s, %s, NOW(), NULL)
+        INSERT INTO likes (like_user_fk, like_post_fk, like_created_at)
+        VALUES (%s, %s, NOW())
         """
         cursor.execute(q, (user["user_pk"], post_pk))
 
-        # Recalculate and store total likes on the post
+        # Get the updated like count
         q = """
         SELECT COUNT(*) AS total_likes
         FROM likes
         WHERE like_post_fk = %s
-          AND like_deleted_at IS NULL
         """
         cursor.execute(q, (post_pk,))
         row = cursor.fetchone()
@@ -385,6 +379,74 @@ def like_tweet():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 
+
+##############################
+@app.patch("/unlike-tweet")
+#means i have fresh data prevents stale responses from the browser, and ensures like count is always current
+@x.no_cache
+def unlike_tweet():
+    try:
+        user = session.get("user", "")
+        if not user:
+            return "invalid user", 401
+
+        post_pk = request.form.get("post_pk", "").strip()
+        if not post_pk:
+            return "invalid post", 400
+
+        db, cursor = x.db()
+
+        # Hard delete the like
+        q = """
+        DELETE FROM likes
+        WHERE like_user_fk = %s
+          AND like_post_fk = %s
+        """
+        cursor.execute(q, (user["user_pk"], post_pk))
+
+        # Recalculate and update total likes on the post
+        q = """
+        UPDATE posts
+        SET post_total_likes = (
+            SELECT COUNT(*)
+            FROM likes
+            WHERE like_post_fk = %s
+        )
+        WHERE post_pk = %s
+        """
+        cursor.execute(q, (post_pk, post_pk))
+
+        # Get the updated like count
+        q = """
+        SELECT COUNT(*) AS total_likes
+        FROM likes
+        WHERE like_post_fk = %s
+        """
+        cursor.execute(q, (post_pk,))
+        row = cursor.fetchone()
+        like_count = row["total_likes"] if row else 0
+
+        db.commit()
+
+        # Return the "not liked" button with updated count
+        button_html = render_template(
+            "___button_like_tweet.html",
+            post_pk=post_pk,
+            like_count=like_count
+        )
+        return f"""
+            <mixhtml mix-replace="#liked_form_{post_pk}">
+                {button_html}
+            </mixhtml>
+        """
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals():
+            db.rollback()
+        return "error", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 ##############################
 @app.route("/api-create-post", methods=["POST"])
