@@ -181,10 +181,35 @@ def signup(lan = "english"):
 def home():
     try:
         user = session.get("user", "")
-        if not user: return redirect(url_for("login"))
+        if not user: 
+            return redirect(url_for("login"))
+
         db, cursor = x.db()
-        q = "SELECT * FROM users JOIN posts ON user_pk = post_user_fk ORDER BY RAND() LIMIT 5"
-        cursor.execute(q)
+
+        # Load tweets with info about whether current user has liked and total like count
+        q = """
+        SELECT
+            users.*,
+            posts.*,
+            EXISTS(
+                SELECT 1 
+                FROM likes 
+                WHERE likes.like_post_fk = posts.post_pk 
+                  AND likes.like_user_fk = %s
+                  AND likes.like_deleted_at IS NULL
+            ) AS has_liked,
+            (
+                SELECT COUNT(*) 
+                FROM likes 
+                WHERE likes.like_post_fk = posts.post_pk 
+                  AND likes.like_deleted_at IS NULL
+            ) AS like_count
+        FROM users
+        JOIN posts ON user_pk = post_user_fk
+        ORDER BY RAND()
+        LIMIT 5
+        """
+        cursor.execute(q, (user["user_pk"],))
         tweets = cursor.fetchall()
         ic(tweets)
 
@@ -251,10 +276,33 @@ def home_comp():
     try:
 
         user = session.get("user", "")
-        if not user: return "error"
+        if not user: 
+            return "error"
+
         db, cursor = x.db()
-        q = "SELECT * FROM users JOIN posts ON user_pk = post_user_fk ORDER BY RAND() LIMIT 5"
-        cursor.execute(q)
+        q = """
+        SELECT
+            users.*,
+            posts.*,
+            EXISTS(
+                SELECT 1 
+                FROM likes 
+                WHERE likes.like_post_fk = posts.post_pk 
+                  AND likes.like_user_fk = %s
+                  AND likes.like_deleted_at IS NULL
+            ) AS has_liked,
+            (
+                SELECT COUNT(*) 
+                FROM likes 
+                WHERE likes.like_post_fk = posts.post_pk 
+                  AND likes.like_deleted_at IS NULL
+            ) AS like_count
+        FROM users
+        JOIN posts ON user_pk = post_user_fk
+        ORDER BY RAND()
+        LIMIT 5
+        """
+        cursor.execute(q, (user["user_pk"],))
         tweets = cursor.fetchall()
         ic(tweets)
 
@@ -286,21 +334,53 @@ def profile():
         pass
 
 
-
 ##############################
 @app.patch("/like-tweet")
 @x.no_cache
-def api_like_tweet():
+def like_tweet():
     try:
-        button_unlike_tweet = render_template("___button_unlike_tweet.html")
+        user = session.get("user", "")
+        if not user:
+            return "invalid user", 401
+
+        post_pk = request.form.get("post_pk", "").strip()
+        if not post_pk:
+            return "invalid post", 400
+
+        db, cursor = x.db()
+
+        # Insert like for this user/post, ignore if it already exists
+        q = """
+        INSERT IGNORE INTO likes (like_user_fk, like_post_fk, like_created_at, like_deleted_at)
+        VALUES (%s, %s, NOW(), NULL)
+        """
+        cursor.execute(q, (user["user_pk"], post_pk))
+
+        # Recalculate and store total likes on the post
+        q = """
+        SELECT COUNT(*) AS total_likes
+        FROM likes
+        WHERE like_post_fk = %s
+          AND like_deleted_at IS NULL
+        """
+        cursor.execute(q, (post_pk,))
+        row = cursor.fetchone()
+        like_count = row["total_likes"] if row else 0
+
+        db.commit()
+
+        # Return a snippet that replaces only this post's like button (black heart)
+        button_html = render_template("___button_liked_tweet.html", post_pk=post_pk, like_count=like_count)
         return f"""
-            <mixhtml mix-replace="#button_1">
-                {button_unlike_tweet}
+            <mixhtml mix-replace="#like_form_{post_pk}">
+                {button_html}
             </mixhtml>
         """
     except Exception as ex:
         ic(ex)
-        return "error"
+        if "db" in locals():
+            db.rollback()
+        return "error", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()

@@ -1,4 +1,4 @@
-<article class="post" mix-fade-in="5000">
+<article class="post">
     <img src="{{ url_for('static', filename='images/'~(tweet.user_avatar_path if tweet.user_avatar_path else 'unknown.jpg')) }}" alt="Profile Picture" 
     class="w-8 h-8 rounded-full">
     <div class="post-content">
@@ -20,7 +20,14 @@
         <div class="post-actions">
             <span class="action"><i class="fa-regular fa-comment"></i> 12</span>
             <span class="action"><i class="fa-solid fa-retweet"></i> 5</span>
-            {% include "___button_like_tweet.html" %}
+            {# Like / liked button, depending on whether current user has liked this post #}
+            {% set post_pk = tweet.post_pk %}
+            {% set like_count = tweet.like_count|default(tweet.post_total_likes, true) %}
+            {% if tweet.has_liked %}
+                {% include "___button_liked_tweet.html" %}
+            {% else %}
+                {% include "___button_like_tweet.html" %}
+            {% endif %}
             <span class="action"><i class="fa-solid fa-chart-simple"></i> 230</span>
             <span class="action"><i class="fa-solid fa-share"></i></span>
         </div>
