@@ -187,6 +187,7 @@ def home():
         db, cursor = x.db()
 
         # Load tweets with info about whether current user has liked and total like count
+        # NEED FURTHER EXPLANATION FOR THIS QUERY FROM SANTIAGO ( LITTLE CHAT HELP WITH THIS ONE)
         q = """
         SELECT
             users.*,
@@ -215,9 +216,23 @@ def home():
         cursor.execute(q)
         trends = cursor.fetchall()
         ic(trends)
-
-        q = "SELECT * FROM users WHERE user_pk != %s ORDER BY RAND() LIMIT 3"
-        cursor.execute(q, (user["user_pk"],))
+        # NEED FURTHER EXPLANATION FOR THIS QUERY FROM SANTIAGO ( LITTLE CHAT HELP WITH THIS ONE)
+        q = """
+        SELECT 
+            users.*,
+            EXISTS(
+                SELECT 1 
+                FROM follows 
+                WHERE follows.follow_follower_fk = %s 
+                  AND follows.follow_following_fk = users.user_pk
+                  AND follows.follow_deleted_at IS NULL
+            ) AS is_following
+        FROM users 
+        WHERE user_pk != %s 
+        ORDER BY RAND() 
+        LIMIT 3
+        """
+        cursor.execute(q, (user["user_pk"], user["user_pk"]))
         suggestions = cursor.fetchall()
         ic(suggestions)
 
@@ -624,3 +639,164 @@ def get_data_from_sheet():
         return str(ex)
     finally:
         pass
+##############################################################
+@app.post("/api-follow-user")
+def api_follow_user():
+    try:
+        user = session.get("user", "")
+        if not user:
+            return "invalid user", 401
+
+        user_pk = user["user_pk"]
+        following_user_pk = request.form.get("following_user_pk", "").strip()
+        
+        if not following_user_pk:
+            return "invalid following user", 400
+        
+        # Prevent self-follow
+        if user_pk == following_user_pk:
+            return "Cannot follow yourself", 400
+
+        db, cursor = x.db()
+
+        # Validate that the user to follow exists
+        q = "SELECT * FROM users WHERE user_pk = %s"
+        cursor.execute(q, (following_user_pk,))
+        following_user = cursor.fetchone()
+        if not following_user:
+            return "User not found", 400
+
+        # Check if follow relationship already exists
+        q = """
+        SELECT * FROM follows 
+        WHERE follow_follower_fk = %s 
+          AND follow_following_fk = %s
+        """
+        cursor.execute(q, (user_pk, following_user_pk))
+        existing_follow = cursor.fetchone()
+
+        if existing_follow:
+            # If already following (not deleted)
+            if existing_follow["follow_deleted_at"] is None:
+                # Already following, return success (idempotent)
+                button_html = render_template("___button_following_user.html", user_pk=following_user_pk)
+                return f"""
+                    <mixhtml mix-replace="#follow_button_{following_user_pk}">
+                        {button_html}
+                    </mixhtml>
+                """
+            else:
+                # Re-follow: update the existing record (soft delete reversal)
+                q = """
+                UPDATE follows 
+                SET follow_deleted_at = NULL, 
+                    follow_created_at = NOW()
+                WHERE follow_follower_fk = %s 
+                  AND follow_following_fk = %s
+                """
+                cursor.execute(q, (user_pk, following_user_pk))
+        else:
+            # New follow: insert new record
+            follow_pk = uuid.uuid4().hex
+            q = """
+            INSERT INTO follows (follow_pk, follow_follower_fk, follow_following_fk, follow_created_at, follow_deleted_at)
+            VALUES (%s, %s, %s, NOW(), NULL)
+            """
+            cursor.execute(q, (follow_pk, user_pk, following_user_pk))
+
+        db.commit()
+
+        # Return button update (following state)
+        button_html = render_template("___button_following_user.html", user_pk=following_user_pk)
+        return f"""
+            <mixhtml mix-replace="#follow_button_{following_user_pk}">
+                {button_html}
+            </mixhtml>
+        """
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals():
+            db.rollback()
+        
+        # Handle duplicate key error gracefully
+        if "Duplicate entry" in str(ex):
+            # Already following, return success
+            button_html = render_template("___button_following_user.html", user_pk=following_user_pk)
+            return f"""
+                <mixhtml mix-replace="#follow_button_{following_user_pk}">
+                    {button_html}
+                </mixhtml>
+            """
+        
+        return "error", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+##############################################################
+@app.patch("/api-unfollow-user")
+def api_unfollow_user():
+    try:
+        user = session.get("user", "")
+        if not user:
+            return "invalid user", 401
+
+        user_pk = user["user_pk"]
+        following_user_pk = request.form.get("following_user_pk", "").strip()
+        
+        if not following_user_pk:
+            return "invalid following user", 400
+        
+        # Prevent self-unfollow
+        if user_pk == following_user_pk:
+            return "Cannot unfollow yourself", 400
+
+        db, cursor = x.db()
+
+        # Validate that the user to unfollow exists
+        q = "SELECT * FROM users WHERE user_pk = %s"
+        cursor.execute(q, (following_user_pk,))
+        following_user = cursor.fetchone()
+        if not following_user:
+            return "User not found", 400
+
+        # Check if unfollow relationship already exists
+        q = """
+        SELECT * FROM follows 
+        WHERE follow_follower_fk = %s 
+          AND follow_following_fk = %s
+        """
+        cursor.execute(q, (user_pk, following_user_pk))
+        existing_follow = cursor.fetchone()
+
+        if existing_follow:
+            # If already following (not deleted) - perform soft delete
+            if existing_follow["follow_deleted_at"] is None:
+                # Soft delete: set follow_deleted_at to NOW()
+                q = """
+                UPDATE follows 
+                SET follow_deleted_at = NOW()
+                WHERE follow_follower_fk = %s 
+                  AND follow_following_fk = %s
+                """
+                cursor.execute(q, (user_pk, following_user_pk))
+
+        db.commit()
+
+        # Return button update (following state)
+        button_html = render_template("___button_follow_user.html", user_pk=following_user_pk)
+        return f"""
+            <mixhtml mix-replace="#following_button_{following_user_pk}">
+                {button_html}
+            </mixhtml>
+        """
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals():
+            db.rollback()
+        return "error", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+##############################
