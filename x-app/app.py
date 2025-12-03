@@ -212,6 +212,25 @@ def home():
         tweets = cursor.fetchall()
         ic(tweets)
 
+        # Fetch comments for each tweet with user info
+        for tweet in tweets:
+            q_comments = """
+            SELECT 
+                comment.*,
+                users.user_first_name,
+                users.user_last_name,
+                users.user_username,
+                users.user_avatar_path
+            FROM comment
+            JOIN users ON comment.comment_user_fk = users.user_pk
+            WHERE comment.comment_post_fk = %s 
+              AND comment.comment_deleted_at IS NULL
+            ORDER BY comment.comment_created_at DESC
+            LIMIT 3
+            """
+            cursor.execute(q_comments, (tweet["post_pk"],))
+            tweet["comments"] = cursor.fetchall()
+
         q = "SELECT * FROM trends ORDER BY RAND() LIMIT 3"
         cursor.execute(q)
         trends = cursor.fetchall()
@@ -283,47 +302,66 @@ def logout():
 
 
 
-##############################
-@app.get("/home-comp")
-def home_comp():
-    try:
+# ##############################
+# @app.get("/home-comp")
+# def home_comp():
+#     try:
 
-        user = session.get("user", "")
-        if not user: 
-            return "error"
+#         user = session.get("user", "")
+#         if not user: 
+#             return "error"
 
-        db, cursor = x.db()
-        q = """
-        SELECT
-            users.*,
-            posts.*,
-            EXISTS(
-                SELECT 1 
-                FROM likes 
-                WHERE likes.like_post_fk = posts.post_pk 
-                  AND likes.like_user_fk = %s
-            ) AS has_liked,
-            (
-                SELECT COUNT(*) 
-                FROM likes 
-                WHERE likes.like_post_fk = posts.post_pk
-            ) AS like_count
-        FROM users
-        JOIN posts ON user_pk = post_user_fk
-        ORDER BY RAND()
-        LIMIT 5
-        """
-        cursor.execute(q, (user["user_pk"],))
-        tweets = cursor.fetchall()
-        ic(tweets)
+#         db, cursor = x.db()
+#         q = """
+#         SELECT
+#             users.*,
+#             posts.*,
+#             EXISTS(
+#                 SELECT 1 
+#                 FROM likes 
+#                 WHERE likes.like_post_fk = posts.post_pk 
+#                   AND likes.like_user_fk = %s
+#             ) AS has_liked,
+#             (
+#                 SELECT COUNT(*) 
+#                 FROM likes 
+#                 WHERE likes.like_post_fk = posts.post_pk
+#             ) AS like_count
+#         FROM users
+#         JOIN posts ON user_pk = post_user_fk
+#         ORDER BY RAND()
+#         LIMIT 5
+#         """
+#         cursor.execute(q, (user["user_pk"],))
+#         tweets = cursor.fetchall()
+#         ic(tweets)
 
-        html = render_template("_home_comp.html", tweets=tweets)
-        return f"""<mixhtml mix-update="main">{ html }</mixhtml>"""
-    except Exception as ex:
-        ic(ex)
-        return "error"
-    finally:
-        pass
+#         Fetch comments for each tweet with user info
+#         for tweet in tweets:
+#             q_comments = """
+#             SELECT 
+#                 comment.*,
+#                 users.user_first_name,
+#                 users.user_last_name,
+#                 users.user_username,
+#                 users.user_avatar_path
+#             FROM comment
+#             JOIN users ON comment.comment_user_fk = users.user_pk
+#             WHERE comment.comment_post_fk = %s 
+#               AND comment.comment_deleted_at IS NULL
+#             ORDER BY comment.comment_created_at DESC
+#             LIMIT 3
+#             """
+#             cursor.execute(q_comments, (tweet["post_pk"],))
+#             tweet["comments"] = cursor.fetchall()
+
+#         html = render_template("_home_comp.html", tweets=tweets)
+#         return f"""<mixhtml mix-update="main">{ html }</mixhtml>"""
+#     except Exception as ex:
+#         ic(ex)
+#         return "error"
+#     finally:
+#         pass
 
 
 ##############################
@@ -800,3 +838,94 @@ def api_unfollow_user():
         if "db" in locals(): db.close()
 
 ##############################
+@app.post("/api-create-comment")
+def api_create_comment():
+  try:
+    user = session.get("user", "")
+    if not user:
+      return "invalid user", 401
+
+    post_pk = request.form.get("post_pk", "").strip()
+    if not post_pk:
+      return "invalid post", 400
+
+    comment_message = request.form.get("comment_message", "").strip()
+    if not comment_message:
+      return "invalid comment", 400
+
+    comment_pk = uuid.uuid4().hex
+    db, cursor = x.db()
+
+    q = """
+    INSERT INTO comment (comment_pk, comment_user_fk, comment_post_fk, comment_message, comment_created_at, comment_deleted_at)
+    VALUES (%s, %s, %s, %s, NOW(), NULL)
+    """
+    cursor.execute(q, (comment_pk, user["user_pk"], post_pk, comment_message))
+    db.commit()
+
+    # Fetch updated comments with user info
+    q_comments = """
+    SELECT 
+        comment.*,
+        users.user_first_name,
+        users.user_last_name,
+        users.user_username,
+        users.user_avatar_path
+    FROM comment
+    JOIN users ON comment.comment_user_fk = users.user_pk
+    WHERE comment.comment_post_fk = %s 
+      AND comment.comment_deleted_at IS NULL
+    ORDER BY comment.comment_created_at DESC
+    LIMIT 3
+    """
+    cursor.execute(q_comments, (post_pk,))
+    comments = cursor.fetchall()
+
+    # Return updated comments HTML // ai helped me with this fase as i could not return the comments to my html for some reason
+    comments_html = render_template("_comments.html", comments=comments)
+    return f"""
+        <browser mix-replace="#comments_list_{post_pk}">
+            {comments_html}
+        </browser>
+    """, 200
+  except Exception as ex:
+        ic(ex)
+        if "db" in locals():
+            db.rollback()
+        return "error", 500
+  finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+##############################################################
+@app.get("/api-get-comments")
+def api_get_comments():
+  try:
+    post_pk = request.args.get("post_pk", "").strip()
+    if not post_pk:
+      return "invalid post", 400
+
+    db, cursor = x.db()
+
+    q = """
+    SELECT 
+        comment.*,
+        users.user_first_name,
+        users.user_last_name,
+        users.user_username,
+        users.user_avatar_path
+    FROM comment
+    JOIN users ON comment.comment_user_fk = users.user_pk
+    WHERE comment.comment_post_fk = %s 
+      AND comment.comment_deleted_at IS NULL
+    ORDER BY comment.comment_created_at DESC
+    LIMIT 3
+    """
+    cursor.execute(q, (post_pk,))
+    comments = cursor.fetchall()  
+    return render_template("_comments.html", comments=comments)
+  except Exception as ex:
+    ic(ex)
+    return "System under maintenance", 500
+  finally:
+    if "cursor" in locals(): cursor.close()
+    if "db" in locals(): db.close()

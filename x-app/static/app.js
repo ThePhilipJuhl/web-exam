@@ -64,3 +64,32 @@ burger.addEventListener("click", () => {
   // toggle icon
   burger.classList.toggle("open");
 });
+
+// ##############################
+// Comment character counter! :)
+document.addEventListener("DOMContentLoaded", () => {
+  const commentTextareas = document.querySelectorAll('textarea[name="comment_message"]');
+  
+  commentTextareas.forEach(textarea => {
+    const form = textarea.closest('form');
+    const charCount = form?.querySelector('.comment-char-count');
+    
+    if (charCount) {
+      // initial count
+      charCount.textContent = `${textarea.value.length}/280`;
+      
+      // on input update the initial count 
+      textarea.addEventListener('input', () => {
+        const length = textarea.value.length;
+        charCount.textContent = `${length}/280`;
+        
+        // Change color if/when approaching limit
+        if (length > 260) {
+          charCount.style.color = 'rgb(244, 33, 46)';
+        } else {
+          charCount.style.color = 'rgb(110, 109, 109)';
+        }
+      });
+    }
+  });
+});

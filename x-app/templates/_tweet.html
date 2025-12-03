@@ -18,8 +18,8 @@
         {% endif %}
         
         <div class="post-actions">
-            <span class="action"><i class="fa-regular fa-comment"></i> 12</span>
-            <span class="action"><i class="fa-solid fa-retweet"></i> 5</span>
+            <span class="action"><i class="fa-regular fa-comment"></i> 0</span>
+            <span class="action"><i class="fa-solid fa-retweet"></i> 0</span>
             {# Like / liked button, depending on whether current user has liked this post #}
             {% set post_pk = tweet.post_pk %}
             {% set like_count = tweet.like_count|default(tweet.post_total_likes, true) %}
@@ -30,6 +30,44 @@
             {% endif %}
             <span class="action"><i class="fa-solid fa-chart-simple"></i> 230</span>
             <span class="action"><i class="fa-solid fa-share"></i></span>
+        </div>
+        <div class="comments-section">
+            {% if user %}
+            <div class="comment-form">
+                <div class="d-flex flex-row">
+                    <form id="comment_form_{{ post_pk }}" 
+                          action="/api-create-comment" 
+                          mix-post 
+                          class="d-flex flex-col w-full">
+                        <input type="hidden" name="post_pk" value="{{ post_pk }}">
+                        <textarea name="comment_message" 
+                                  placeholder="Post your reply" 
+                                  class="w-full outline-none border-b-1 border-c-gray:+50 pa-2 mb-2"
+                                  maxlength="280"
+                                  rows="1"></textarea>
+                        <div class="d-flex flex-row align-items-center">
+                            <span class="text-c-gray text-80 comment-char-count">0/280</span>
+                            <button mix-default="Reply" 
+                                    mix-await="Posting ..." 
+                                    class="w-auto bg-c-black text-c-white py-1 px-4 rounded-xl text-90">
+                                Reply
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <div id="comments_list_{{ post_pk }}" class="comments-list">
+                {% if tweet.comments %}
+                    {% set comments = tweet.comments %}
+                    {% include "_comments.html" %}
+                {% else %}
+                    <div class="no-comments text-c-gray text-80 pa-2">
+                        No comments yet.
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </article>
