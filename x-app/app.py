@@ -384,6 +384,25 @@ def profile():
 
 
 ##############################
+@app.delete("/delete-profile")
+def delete_profile():
+    try:
+        user = session.get("user", "")
+        if not user: return "error"
+        q = "DELETE FROM users WHERE user_pk = %s"
+        db, cursor = x.db()
+        cursor.execute(q, (user["user_pk"],))
+        db.commit()
+        session.clear()
+        return f"""<browser mix-redirect="{ url_for('login') }"></browser>"""
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
 @app.patch("/like-tweet")
 @x.no_cache
 def like_tweet():
@@ -930,3 +949,4 @@ def api_create_comment():
 #   finally:
 #     if "cursor" in locals(): cursor.close()
 #     if "db" in locals(): db.close()
+

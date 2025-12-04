@@ -158,5 +158,25 @@
         "english": "Already have an account",
         "danish": "Har du allerede en konto?",
         "spanish": "Tienes mucho conto"
+    },
+    "update_profile": {
+        "english": "Update Profile",
+        "danish": "Opdater profil",
+        "spanish": "Opdalotcho profilo"
+    },
+    "delete": {
+        "english": "delete",
+        "danish": "slet ",
+        "spanish": "Sletcho"
+    },
+    "delete_profile": {
+        "english": "Delete Profile",
+        "danish": "Slet Profil",
+        "spanish": "SLetcho profilo"
+    },
+    "delete_profile_warning": {
+        "english": "Deleting account will permanently delete your account and all associated data.",
+        "danish": "Hvis du sletter en konto, slettes din konto og alle tilknyttede data permanent.",
+        "spanish": "Eliminar la cuenta eliminará permanentemente su cuenta y todos los datos asociados."
     }
 }

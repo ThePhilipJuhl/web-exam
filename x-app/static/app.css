@@ -702,6 +702,19 @@ p{
   background: #222;
 }
 
+.x-dialog__delete {
+  text-align: center;
+  margin-top: 2rem;
+}
+.x-dialog__btn--delete {
+  background: #dc3545;
+  color: #fff;
+}
+
+.x-dialog__btn--delete:hover {
+  background: #c82333;
+}
+
 .x-dialog__alt {
   text-align: center;
   font-size: 0.9rem;
