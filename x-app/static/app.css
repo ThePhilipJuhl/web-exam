@@ -222,8 +222,16 @@ p{
         flex: 1;
 
         .post-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
           font-size: 0.9rem;
           margin-bottom: 0.3rem;
+          position: relative;
+
+          .post-header-info {
+            flex: 1;
+          }
 
           .name {
             font-weight: bold;
@@ -234,6 +242,74 @@ p{
           .time {
             color: rgb(110, 109, 109);
             font-size: 0.85rem;
+          }
+
+          .post-menu-container {
+            position: relative;
+          }
+
+          .post-menu-btn {
+            color: rgb(110, 109, 109);
+            padding: 0.4rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+
+            &:hover {
+              background-color: rgba(29, 155, 240, 0.1);
+              color: rgb(29, 155, 240);
+            }
+          }
+
+          .post-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid rgb(230, 230, 230);
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            min-width: 150px;
+            margin-top: 0.25rem;
+            overflow: hidden;
+
+            .post-menu-item {
+              width: 100%;
+              padding: 0.75rem 1rem;
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+              border: none;
+              background: transparent;
+              cursor: pointer;
+              font-size: 0.9rem;
+              text-align: left;
+              transition: background-color 0.2s;
+              color: rgb(15, 15, 15);
+
+              &:hover {
+                background-color: rgb(247, 249, 249);
+              }
+
+              i {
+                width: 18px;
+                text-align: center;
+              }
+
+              &.post-menu-item-delete {
+                color: rgb(244, 33, 46);
+
+                &:hover {
+                  background-color: rgba(244, 33, 46, 0.1);
+                }
+              }
+            }
           }
         }
 
@@ -725,4 +801,9 @@ p{
 }
 .x-dialog__alt a:hover {
   text-decoration: underline;
+}
+
+/* Utility classes */
+.d-none {
+  display: none !important;
 }

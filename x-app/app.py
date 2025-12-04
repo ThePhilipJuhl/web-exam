@@ -205,7 +205,9 @@ def home():
             ) AS like_count
         FROM users
         JOIN posts ON user_pk = post_user_fk
+        WHERE posts.post_deleted_at IS NULL
         ORDER BY RAND()
+
         LIMIT 5
         """
         cursor.execute(q, (user["user_pk"],))
@@ -531,7 +533,7 @@ def api_create_post():
         post_pk = uuid.uuid4().hex
         post_image_path = ""
         db, cursor = x.db()
-        q = "INSERT INTO posts VALUES(%s, %s, %s, %s, %s)"
+        q = "INSERT INTO posts (post_pk, post_user_fk, post_message, post_total_likes, post_image_path, post_deleted_at) VALUES(%s, %s, %s, %s, %s, NULL)"
         cursor.execute(q, (post_pk, user_pk, post, 0, post_image_path))
         db.commit()
         toast_ok = render_template("___toast_ok.html", message="The world is reading your post !")
@@ -569,6 +571,48 @@ def api_create_post():
 
 
 ##############################
+@app.delete("/api-delete-post")
+def api_delete_post():
+    try:
+        user = session.get("user", "")
+        if not user:
+            return "invalid user", 401
+
+        post_pk = request.args.get("post_pk", "").strip()
+        if not post_pk:
+            toast_error = render_template("___toast_error.html", message="Invalid post")
+            return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 400
+        
+        db, cursor = x.db()
+
+        q = "SELECT * FROM posts WHERE post_pk = %s AND post_user_fk = %s AND post_deleted_at IS NULL"
+        cursor.execute(q, (post_pk, user["user_pk"]))
+        post = cursor.fetchone()
+
+        if not post:
+            toast_error = render_template("___toast_error.html", message="Post not found or unauthorized")
+            return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 403
+
+        # Soft delete the post (set post_deleted_at timestamp)
+        # Comments and likes remain intact - no need to delete them
+        q = "UPDATE posts SET post_deleted_at = NOW() WHERE post_pk = %s AND post_user_fk = %s"
+        cursor.execute(q, (post_pk, user["user_pk"]))
+        db.commit()
+
+        toast_ok = render_template("___toast_ok.html", message="Post deleted successfully")
+        return f"""
+            <browser mix-bottom="#toast">{toast_ok}</browser>
+            <browser mix-remove="#post_{post_pk}"></browser>
+        """, 200
+
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        return "error", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+################################
 @app.route("/api-update-profile", methods=["POST"])
 def api_update_profile():
 

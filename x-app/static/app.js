@@ -93,3 +93,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// ##############################
+// Post menu dropdown toggle
+function togglePostMenu(postPk) {
+  const menu = document.getElementById(`post-menu-${postPk}`);
+  if (!menu) return;
+
+  // Close all other menus first
+  document.querySelectorAll('.post-menu').forEach(m => {
+    if (m.id !== `post-menu-${postPk}`) {
+      m.classList.add('d-none');
+    }
+  });
+
+  // Toggle current menu
+  menu.classList.toggle('d-none');
+}
+
+// Close post menu when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.post-menu-container')) {
+    document.querySelectorAll('.post-menu').forEach(menu => {
+      menu.classList.add('d-none');
+    });
+  }
+});

@@ -1,13 +1,30 @@
-<article class="post">
+{% set post_pk = tweet.post_pk %}
+<article id="post_{{ post_pk }}" class="post">
     <img src="{{ url_for('static', filename='images/'~(tweet.user_avatar_path if tweet.user_avatar_path else 'unknown.jpg')) }}" alt="Profile Picture" 
     class="w-8 h-8 rounded-full">
     <div class="post-content">
         <div class="post-header">
-            <span class="name">
-                {{ tweet.user_first_name }}
-                {{ tweet.user_last_name }}
-            </span>
-            <span class="handle">@{{ tweet.user_username }}</span> · <span class="time">1d</span>
+            <div class="post-header-info">
+                <span class="name">
+                    {{ tweet.user_first_name }}
+                    {{ tweet.user_last_name }}
+                </span>
+                <span class="handle">@{{ tweet.user_username }}</span> · <span class="time">1d</span>
+            </div>
+            {% if user and tweet.post_user_fk == user.user_pk %}
+            <div class="post-menu-container">
+                <button class="post-menu-btn" onclick="togglePostMenu('{{ post_pk }}')" aria-label="More options">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+                <div id="post-menu-{{ post_pk }}" class="post-menu d-none">
+                    <button class="post-menu-item post-menu-item-delete" 
+                            mix-delete="/api-delete-post?post_pk={{ post_pk }}">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>Delete</span>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
         </div>
         <p class="text">
             {{ tweet.post_message }}
@@ -21,7 +38,6 @@
             <span class="action"><i class="fa-regular fa-comment"></i> 0</span>
             <span class="action"><i class="fa-solid fa-retweet"></i> 0</span>
             {# Like / liked button, depending on whether current user has liked this post #}
-            {% set post_pk = tweet.post_pk %}
             {% set like_count = tweet.like_count|default(tweet.post_total_likes, true) %}
             {% if tweet.has_liked %}
                 {% include "___button_liked_tweet.html" %}
