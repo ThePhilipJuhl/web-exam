@@ -897,35 +897,36 @@ def api_create_comment():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 ##############################################################
-@app.get("/api-get-comments")
-def api_get_comments():
-  try:
-    post_pk = request.args.get("post_pk", "").strip()
-    if not post_pk:
-      return "invalid post", 400
+# old version fetching from a api get comment not working 
+# @app.get("/api-get-comments")
+# def api_get_comments():
+#   try:
+#     post_pk = request.args.get("post_pk", "").strip()
+#     if not post_pk:
+#       return "invalid post", 400
 
-    db, cursor = x.db()
+#     db, cursor = x.db()
 
-    q = """
-    SELECT 
-        comment.*,
-        users.user_first_name,
-        users.user_last_name,
-        users.user_username,
-        users.user_avatar_path
-    FROM comment
-    JOIN users ON comment.comment_user_fk = users.user_pk
-    WHERE comment.comment_post_fk = %s 
-      AND comment.comment_deleted_at IS NULL
-    ORDER BY comment.comment_created_at DESC
-    LIMIT 3
-    """
-    cursor.execute(q, (post_pk,))
-    comments = cursor.fetchall()  
-    return render_template("_comments.html", comments=comments)
-  except Exception as ex:
-    ic(ex)
-    return "System under maintenance", 500
-  finally:
-    if "cursor" in locals(): cursor.close()
-    if "db" in locals(): db.close()
+#     q = """
+#     SELECT 
+#         comment.*,
+#         users.user_first_name,
+#         users.user_last_name,
+#         users.user_username,
+#         users.user_avatar_path
+#     FROM comment
+#     JOIN users ON comment.comment_user_fk = users.user_pk
+#     WHERE comment.comment_post_fk = %s 
+#       AND comment.comment_deleted_at IS NULL
+#     ORDER BY comment.comment_created_at DESC
+#     LIMIT 3
+#     """
+#     cursor.execute(q, (post_pk,))
+#     comments = cursor.fetchall()  
+#     return render_template("_comments.html", comments=comments)
+#   except Exception as ex:
+#     ic(ex)
+#     return "System under maintenance", 500
+#   finally:
+#     if "cursor" in locals(): cursor.close()
+#     if "db" in locals(): db.close()
