@@ -1,4 +1,4 @@
-from flask import request, make_response, render_template
+from flask import request, make_response, render_template, url_for
 import mysql.connector
 import re 
 import dictionary
@@ -148,6 +148,25 @@ def validate_search_for():
 
 
 ##############################
+
+MAX_AVATAR_SIZE = 1 * 1024 * 1024  # 1 MB
+
+def validate_avatar_upload():
+    """Validate uploaded avatar file. Returns the file object if valid, None if no file uploaded."""
+    if 'user_avatar' not in request.files:
+        return None
+    
+    file = request.files['user_avatar']
+    
+    # If no file was selected, return None (avatar update is optional)
+    if file.filename == '':
+        return None
+    
+    
+    return file
+
+
+##############################
 def send_email(to_email, subject, template):
     try:
 
@@ -186,3 +205,20 @@ def send_email(to_email, subject, template):
         raise Exception("cannot send email", 500)
     finally:
         pass
+
+
+##############################
+def get_avatar_url(user_avatar_path):
+    """Returns the correct URL for an avatar path, handling URLs, uploaded files, and legacy images."""
+    # Handle None, empty string, or whitespace-only strings
+    if not user_avatar_path or user_avatar_path.strip() == '':
+        return url_for('static', filename='images/avatar_2.jpg')
+    
+
+    
+    # If it's an uploaded file, use the uploads path
+    if user_avatar_path.startswith('uploads/avatars/'):
+        return url_for('static', filename=user_avatar_path)
+    
+    # Otherwise, assume it's a legacy image in the images folder
+    return url_for('static', filename=f'images/{user_avatar_path}')

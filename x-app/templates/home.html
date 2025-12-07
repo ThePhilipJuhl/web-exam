@@ -62,7 +62,7 @@
             <button class="post-btn">{{ x.lans("Post") }}</button>
 
             <div id="profile_tag">
-                <img src="{{ url_for('static', filename='images/avatar_1.jpg') }}" alt="Profile">
+                <img src="{{ x.get_avatar_url(user.user_avatar_path) }}" alt="Profile">
                 <div>
                     <div class="name">
                         {{ user.user_first_name }}

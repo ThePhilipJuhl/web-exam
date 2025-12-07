@@ -131,7 +131,7 @@ def signup(lan = "english"):
 
             user_pk = uuid.uuid4().hex
             user_last_name = ""
-            user_avatar_path = "https://avatar.iran.liara.run/public/40"
+            user_avatar_path = None
             user_verification_key = uuid.uuid4().hex
             user_verified_at = 0
 
@@ -626,10 +626,50 @@ def api_update_profile():
         user_username = x.validate_user_username()
         user_first_name = x.validate_user_first_name()
 
-        # Connect to the database
-        q = "UPDATE users SET user_email = %s, user_username = %s, user_first_name = %s WHERE user_pk = %s"
-        db, cursor = x.db()
-        cursor.execute(q, (user_email, user_username, user_first_name, user["user_pk"]))
+        # Handle avatar upload if provided some chatgpt help with this code. 
+        user_avatar_path = None
+        avatar_file = x.validate_avatar_upload()
+        
+        if avatar_file:
+            import os
+            # Get file extension
+            filename = avatar_file.filename.lower()
+            ext = os.path.splitext(filename)[1]
+            
+            # Delete old uploaded avatar if it exists (not external URLs or legacy images)
+            old_avatar_path = user.get("user_avatar_path", "")
+            if old_avatar_path and old_avatar_path.startswith("uploads/avatars/"):
+                old_file_path = os.path.join("static", old_avatar_path)
+                if os.path.exists(old_file_path):
+                    try:
+                        os.remove(old_file_path)
+                    except Exception as e:
+                        ic(f"Could not delete old avatar: {e}")
+            
+            # Generate unique filename using user_pk 
+            user_avatar_path = f"{user['user_pk']}{ext}"
+            upload_path = os.path.join("static", "uploads", "avatars", user_avatar_path)
+            
+            # Save the file to the uploads folder
+            avatar_file.save(upload_path)
+            
+            # Store relative path in database so it can be retrieved later
+            user_avatar_path = f"uploads/avatars/{user_avatar_path}"
+        
+        if user_avatar_path:
+            q = "UPDATE users SET user_email = %s, user_username = %s, user_first_name = %s, user_avatar_path = %s WHERE user_pk = %s"
+            db, cursor = x.db()
+            cursor.execute(q, (user_email, user_username, user_first_name, user_avatar_path, user["user_pk"]))
+            
+            # Update session with new avatar path so it can be displayed in the profile page
+            user["user_avatar_path"] = user_avatar_path
+            session["user"] = user
+        else:
+            # Update even if no avatar was uploaded
+            q = "UPDATE users SET user_email = %s, user_username = %s, user_first_name = %s WHERE user_pk = %s"
+            db, cursor = x.db()
+            cursor.execute(q, (user_email, user_username, user_first_name, user["user_pk"]))
+        
         db.commit()
 
         # Response to the browser

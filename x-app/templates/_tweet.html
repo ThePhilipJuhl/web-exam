@@ -1,6 +1,6 @@
 {% set post_pk = tweet.post_pk %}
 <article id="post_{{ post_pk }}" class="post">
-    <img src="{{ url_for('static', filename='images/'~(tweet.user_avatar_path if tweet.user_avatar_path else 'unknown.jpg')) }}" alt="Profile Picture" 
+    <img src="{{ x.get_avatar_url(tweet.user_avatar_path) }}" alt="Profile Picture" 
     class="w-8 h-8 rounded-full">
     <div class="post-content">
         <div class="post-header">
