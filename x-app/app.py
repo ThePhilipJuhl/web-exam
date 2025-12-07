@@ -85,6 +85,10 @@ def login(lan = "english"):
             # error for when user not verified 
             if user["user_verification_key"] != "":
                 raise Exception(x.lans("user_not_verified"), 400)
+            
+            isblocked = user.get("isblocked", False)
+            if isblocked:
+                raise Exception("Blocked cannot enter", 400)
 
             user.pop("user_password")
 
@@ -534,9 +538,21 @@ def admin_panel():
         
         # Fetch all users
         db, cursor = x.db()
+        
+        try:
+            cursor.execute("SELECT isblocked FROM users LIMIT 1")
+            cursor.fetchone() 
+        except Exception:
+            cursor.execute("ALTER TABLE users ADD COLUMN isblocked BOOLEAN DEFAULT FALSE")
+            db.commit()
+        
         q = "SELECT * FROM users"
         cursor.execute(q)
         all_users = cursor.fetchall()
+        
+        for user in all_users:
+            if user.get("isblocked") is None:
+                user["isblocked"] = False
         
         admin_panel_html = render_template("_admin_panel.html", users=all_users, x=x)
         return f"""<browser mix-update="main">{ admin_panel_html }</browser>"""
@@ -1154,6 +1170,86 @@ def api_unfollow_user():
         if "db" in locals():
             db.rollback()
         return "error", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+##############################
+@app.post("/api-toggle-block-user")
+def api_toggle_block_user():
+    try:
+        user = session.get("user", "")
+        if not user:
+            return "invalid user", 401
+        
+        if not user.get("isadmin", False):
+            return "Unauthorized", 403
+        
+        target_user_pk = request.form.get("user_pk", "").strip()
+        if not target_user_pk:
+            return "invalid user_pk", 400
+        
+        # Prevent blocking yourself
+        if user["user_pk"] == target_user_pk:
+            toast_error = render_template("___toast_error.html", message="Cannot block yourself")
+            return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 400
+        
+        db, cursor = x.db()
+        
+        # Check if isblocked column exists, if not add it
+        try:
+            cursor.execute("SELECT isblocked FROM users LIMIT 1")
+            cursor.fetchone()  # Fetch the result to avoid "Unread result found" error i keep getting
+        except Exception:
+            cursor.execute("ALTER TABLE users ADD COLUMN isblocked BOOLEAN DEFAULT FALSE")
+            db.commit()
+        
+        # Get current block status
+        q = "SELECT isblocked, user_email FROM users WHERE user_pk = %s"
+        cursor.execute(q, (target_user_pk,))
+        target_user = cursor.fetchone()
+        
+        if not target_user:
+            return "User not found", 400
+        
+        # Toggle block status
+        new_block_status = not target_user["isblocked"]
+        q = "UPDATE users SET isblocked = %s WHERE user_pk = %s"
+        cursor.execute(q, (new_block_status, target_user_pk))
+        db.commit()
+        
+        # Send email notification
+        try:
+            if new_block_status:
+                # User is being blocked
+                email_blocked = render_template("_email_user_blocked.html")
+                x.send_email(target_user["user_email"], "You have been blocked", email_blocked)
+            else:
+                # User is being unblocked
+                email_unblocked = render_template("_email_user_unblocked.html")
+                x.send_email(target_user["user_email"], "YOU HAVE BEEN UNBLOCKED CONGRATZ<33", email_unblocked)
+        except Exception as email_ex:
+            ic(f"Failed to send email: {email_ex}")
+            # Continue even if email fails
+        
+        # Reload admin panel to show updated status
+        q = "SELECT * FROM users"
+        cursor.execute(q)
+        all_users = cursor.fetchall()
+        
+        admin_panel_html = render_template("_admin_panel.html", users=all_users, x=x)
+        toast_ok = render_template("___toast_ok.html", message="User block status updated")
+        return f"""
+            <browser mix-bottom="#toast">{toast_ok}</browser>
+            <browser mix-update="main">{admin_panel_html}</browser>
+        """, 200
+        
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals():
+            db.rollback()
+        toast_error = render_template("___toast_error.html", message="Failed to update block status")
+        return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 500
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()

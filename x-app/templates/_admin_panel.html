@@ -12,6 +12,7 @@
                 <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Last Name</th>
                 <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Verified</th>
                 <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Admin</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -37,6 +38,16 @@
                     {% else %}
                         <span>User</span>
                     {% endif %}
+                </td>
+                <td style="padding: 12px; border: 1px solid #ddd;">
+                    <form id="block_form_{{ user.user_pk }}" mix-post="/api-toggle-block-user" style="display: inline;">
+                        <input type="hidden" name="user_pk" value="{{ user.user_pk }}">
+                        {% if user.isblocked %}
+                            <button type="submit" mix-default="UNBLOCK" mix-await="Updating..." style="background-color: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">UNBLOCK</button>
+                        {% else %}
+                            <button type="submit" mix-default="BLOCK" mix-await="Updating..." style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">BLOCK</button>
+                        {% endif %}
+                    </form>
                 </td>
             </tr>
             {% endfor %}
