@@ -1,0 +1,46 @@
+<h1>Admin Panel</h1>
+
+<div style="margin-top: 20px;">
+    <h2>All Users</h2>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+            <tr style="background-color: #f0f0f0; border-bottom: 2px solid #ddd;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Avatar</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Email</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Username</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">First Name</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Last Name</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Verified</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Admin</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 12px; border: 1px solid #ddd;">
+                    <img src="{{ x.get_avatar_url(user.user_avatar_path) }}" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                </td>
+                <td style="padding: 12px; border: 1px solid #ddd;">{{ user.user_email }}</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">{{ user.user_username }}</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">{{ user.user_first_name }}</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">{{ user.user_last_name }}</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">
+                    {% if user.user_verified_at > 0 %}
+                        <span style="color: green;">✓ Verified</span>
+                    {% else %}
+                        <span style="color: red;">✗ Not Verified</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 12px; border: 1px solid #ddd;">
+                    {% if user.isadmin %}
+                        <span style="color: blue; font-weight: bold;">Admin</span>
+                    {% else %}
+                        <span>User</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+

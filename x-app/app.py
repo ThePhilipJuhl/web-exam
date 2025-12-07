@@ -134,14 +134,19 @@ def signup(lan = "english"):
             user_avatar_path = None
             user_verification_key = uuid.uuid4().hex
             user_verified_at = 0
+            user_password_reset_key = ""
+            isadmin = False
 
             user_hashed_password = generate_password_hash(user_password)
 
             # Connect to the database
-            q = "INSERT INTO users VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            q = """INSERT INTO users 
+                (user_pk, user_email, user_password, user_username, user_first_name, user_last_name, 
+                 user_avatar_path, user_verification_key, user_password_reset_key, user_verified_at, isadmin) 
+                VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
             db, cursor = x.db()
             cursor.execute(q, (user_pk, user_email, user_hashed_password, user_username, 
-            user_first_name, user_last_name, user_avatar_path, user_verification_key, user_verified_at))
+            user_first_name, user_last_name, user_avatar_path, user_verification_key, user_password_reset_key, user_verified_at, isadmin))
             db.commit()
 
             # send verification email
@@ -514,6 +519,33 @@ def profile():
         return "error"
     finally:
         pass
+
+##############################
+@app.get("/admin-panel")
+def admin_panel():
+    try:
+        user = session.get("user", "")
+        if not user: 
+            return redirect(url_for("login"))
+        
+        # Check if user is admin
+        if not user.get("isadmin", False):
+            return "Unauthorized", 403
+        
+        # Fetch all users
+        db, cursor = x.db()
+        q = "SELECT * FROM users"
+        cursor.execute(q)
+        all_users = cursor.fetchall()
+        
+        admin_panel_html = render_template("_admin_panel.html", users=all_users, x=x)
+        return f"""<browser mix-update="main">{ admin_panel_html }</browser>"""
+    except Exception as ex:
+        ic(ex)
+        return "error"
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
 
 
 ##############################
