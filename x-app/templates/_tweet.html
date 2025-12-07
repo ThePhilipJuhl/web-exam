@@ -17,6 +17,11 @@
                     <i class="fa-solid fa-ellipsis"></i>
                 </button>
                 <div id="post-menu-{{ post_pk }}" class="post-menu d-none">
+                    <button class="post-menu-item post-menu-item-edit" 
+                            onclick="enableEditMode('{{ post_pk }}')">
+                        <i class="fa-solid fa-pencil"></i>
+                        <span>Edit</span>
+                    </button>
                     <button class="post-menu-item post-menu-item-delete" 
                             mix-delete="/api-delete-post?post_pk={{ post_pk }}">
                         <i class="fa-solid fa-trash"></i>
@@ -26,9 +31,34 @@
             </div>
             {% endif %}
         </div>
-        <p class="text">
+        <p id="post-text-{{ post_pk }}" class="text">
             {{ tweet.post_message }}
         </p>
+        <div id="post-edit-form-{{ post_pk }}" class="d-none">
+            <form id="edit_form_{{ post_pk }}" 
+                  action="/api-update-post" 
+                  mix-post 
+                  class="d-flex flex-col w-full">
+                <input type="hidden" name="post_pk" value="{{ post_pk }}">
+                <textarea name="post_message" 
+                          id="edit-textarea-{{ post_pk }}"
+                          class="w-full outline-none border-b-1 border-c-gray:+50 pa-2 mb-2"
+                          maxlength="250"
+                          rows="3">{{ tweet.post_message }}</textarea>
+                <div class="d-flex flex-row align-items-center justify-content-end">
+                    <button type="button" 
+                            onclick="cancelEditMode('{{ post_pk }}')"
+                            class="w-auto bg-c-gray:+20 text-c-black py-1 px-4 rounded-xl text-90 mr-2">
+                        Cancel
+                    </button>
+                    <button mix-default="Update" 
+                            mix-await="Updating ..." 
+                            class="w-auto bg-c-black text-c-white py-1 px-4 rounded-xl text-90">
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
         {% if tweet.post_image_path: %}
         <img src="{{ url_for('static', filename='images/' ~ tweet.post_image_path) }}" alt="Post image" 
         class="w-80">

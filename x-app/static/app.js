@@ -119,3 +119,41 @@ document.addEventListener('click', (e) => {
     });
   }
 });
+
+// ##############################
+// OPEN EDIT MODE
+function enableEditMode(postPk) {
+  // Close the menu
+  const menu = document.getElementById(`post-menu-${postPk}`);
+  if (menu) {
+    menu.classList.add('d-none');
+  }
+
+  // Hide the old text 
+  const textElement = document.getElementById(`post-text-${postPk}`);
+  if (textElement) {
+    textElement.classList.add('d-none');
+  }
+
+  // Replace the hidden old text with the edit form
+  const editForm = document.getElementById(`post-edit-form-${postPk}`);
+  if (editForm) {
+    editForm.classList.remove('d-none');
+    // Focus on the textarea to start typing
+    const textarea = document.getElementById(`edit-textarea-${postPk}`);
+  }
+}
+
+function cancelEditMode(postPk) {
+  // Show the NEWLY ADDED text
+  const textElement = document.getElementById(`post-text-${postPk}`);
+  if (textElement) {
+    textElement.classList.remove('d-none');
+  }
+
+  // Hide the edit form
+  const editForm = document.getElementById(`post-edit-form-${postPk}`);
+  if (editForm) {
+    editForm.classList.add('d-none');
+  }
+}

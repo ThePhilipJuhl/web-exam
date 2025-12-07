@@ -612,6 +612,61 @@ def api_delete_post():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
+##############################
+@app.post("/api-update-post")
+def api_update_post():
+    try:
+        user = session.get("user", "")
+        if not user:
+            return "invalid user", 401
+
+        post_pk = request.form.get("post_pk", "").strip()
+        if not post_pk:
+            toast_error = render_template("___toast_error.html", message="Invalid post")
+            return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 400
+        
+        # re-using validation to re validate the updated post message
+        post_message = x.validate_post(request.form.get("post_message", ""))
+        
+        db, cursor = x.db()
+
+        # Verify the post belongs to the user and is not DELETED
+        q = "SELECT * FROM posts WHERE post_pk = %s AND post_user_fk = %s AND post_deleted_at IS NULL"
+        cursor.execute(q, (post_pk, user["user_pk"]))
+        post = cursor.fetchone()
+
+        if not post:
+            toast_error = render_template("___toast_error.html", message="Post not found or unauthorized")
+            return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 403
+
+        # Update the post message
+        q = "UPDATE posts SET post_message = %s WHERE post_pk = %s AND post_user_fk = %s"
+        cursor.execute(q, (post_message, post_pk, user["user_pk"]))
+        db.commit()
+
+        toast_ok = render_template("___toast_ok.html", message="Post updated successfully")
+        return f"""
+            <browser mix-bottom="#toast">{toast_ok}</browser>
+            <browser mix-update="#post-text-{post_pk}">{(post_message)}</browser>
+
+        """, 200
+
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+
+
+        if "x-error post" in str(ex):
+            toast_error = render_template("___toast_error.html", message=f"Post - {x.POST_MIN_LEN} to {x.POST_MAX_LEN} characters")
+            return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 400
+
+        toast_error = render_template("___toast_error.html", message="System under maintenance")
+        return f"""<browser mix-bottom="#toast">{toast_error}</browser>""", 500
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
 ################################
 @app.route("/api-update-profile", methods=["POST"])
 def api_update_profile():
