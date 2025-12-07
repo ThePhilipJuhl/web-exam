@@ -291,6 +291,137 @@ def verify_account():
         if "db" in locals(): db.close()
 
 ##############################
+@app.route("/forgot-password", methods=["GET", "POST"])
+@app.route("/forgot-password/<lan>", methods=["GET", "POST"])
+def forgot_password(lan = "english"):
+    if lan not in x.allowed_languages: lan = "english"
+    x.default_language = lan
+
+    if request.method == "GET":
+        if session.get("user", ""): return redirect(url_for("home"))
+        return render_template("forgot_password.html", lan=lan)
+
+    if request.method == "POST":
+        try:
+            user_email = x.validate_user_email(lan)
+            
+            db, cursor = x.db()
+            q = "SELECT * FROM users WHERE user_email = %s"
+            cursor.execute(q, (user_email,))
+            user = cursor.fetchone()
+
+            # i wont  reveal if user exists or not (security ) so if the user exist send email if not dont send anything
+            if user:
+                # Generate password reset key
+                user_password_reset_key = uuid.uuid4().hex
+                
+                # Update user with reset key
+                q = "UPDATE users SET user_password_reset_key = %s WHERE user_email = %s"
+                cursor.execute(q, (user_password_reset_key, user_email))
+                db.commit()
+
+                # use the Send  email but with forgot password template
+                email_forgot_password = render_template("_email_forgot_password.html", user_password_reset_key=user_password_reset_key)
+                x.send_email(user_email, "Reset your password", email_forgot_password)
+
+          
+            toast_ok = render_template("___toast_ok.html", message="If that email exists, we've sent a password reset link.")
+            return f"""<browser mix-bottom="#toast">{ toast_ok }</browser>"""
+
+        except Exception as ex:
+            ic(ex)
+            if "db" in locals(): db.rollback()
+            if len(ex.args) > 1 and ex.args[1] == 400:
+                toast_error = render_template("___toast_error.html", message=ex.args[0])
+                return f"""<browser mix-bottom="#toast">{ toast_error }</browser>""", 400
+
+            toast_error = render_template("___toast_error.html", message="System under maintenance")
+            return f"""<browser mix-bottom="#toast">{ toast_error }</browser>""", 500
+
+        finally:
+            if "cursor" in locals(): cursor.close()
+            if "db" in locals(): db.close()
+
+##############################
+@app.route("/reset-password", methods=["GET", "POST"])
+def reset_password():
+    try:
+        lan = request.args.get("lan", "english")
+        if lan not in x.allowed_languages: lan = "english"
+        x.default_language = lan
+
+        if request.method == "GET":
+            reset_key = request.args.get("key", "").strip()
+            if not reset_key:
+                return "Invalid reset link", 400
+            
+            # Validate reset key exists
+            db, cursor = x.db()
+            q = "SELECT * FROM users WHERE user_password_reset_key = %s"
+            cursor.execute(q, (reset_key,))
+            user = cursor.fetchone()
+            
+            if not user:
+                return "Invalid or expired reset link", 400
+            
+            return render_template("reset_password.html", reset_key=reset_key, lan=lan)
+
+        if request.method == "POST":
+            reset_key = request.form.get("reset_key", "").strip()
+            if not reset_key:
+                raise Exception("Invalid reset key", 400)
+
+            # re-use validate password from the signup page
+            user_password = x.validate_user_password()
+            user_password_confirm = x.validate_user_password_confirm()
+            
+            if user_password != user_password_confirm:
+                raise Exception("Passwords do not match", 400)
+
+            db, cursor = x.db()
+            
+            # Verify reset key exists
+            q = "SELECT * FROM users WHERE user_password_reset_key = %s"
+            cursor.execute(q, (reset_key,))
+            user = cursor.fetchone()
+            
+            if not user:
+                raise Exception("Invalid or expired reset link", 400)
+
+            # hash the new password
+            user_hashed_password = generate_password_hash(user_password)
+
+            # update password and clear reset key
+            q = "UPDATE users SET user_password = %s, user_password_reset_key = '' WHERE user_password_reset_key = %s"
+            cursor.execute(q, (user_hashed_password, reset_key))
+            db.commit()
+
+            if cursor.rowcount != 1:
+                raise Exception("Failed to reset password", 400)
+
+            toast_ok = render_template("___toast_ok.html", message="Password reset successfully. You can now log in.")
+            return f"""
+                <browser mix-bottom="#toast">{ toast_ok }</browser>
+                <browser mix-redirect="/login"></browser>
+            """
+
+    except Exception as ex:
+        ic(ex)
+        if "db" in locals(): db.rollback()
+        # User errors
+        if len(ex.args) > 1 and ex.args[1] == 400:
+            toast_error = render_template("___toast_error.html", message=ex.args[0])
+            return f"""<browser mix-bottom="#toast">{ toast_error }</browser>""", 400
+
+        # System or developer error
+        toast_error = render_template("___toast_error.html", message="System under maintenance")
+        return f"""<browser mix-bottom="#toast">{ toast_error }</browser>""", 500
+
+    finally:
+        if "cursor" in locals(): cursor.close()
+        if "db" in locals(): db.close()
+
+##############################
 @app.get("/logout")
 def logout():
     try:
