@@ -2,6 +2,8 @@ from flask import request, make_response, render_template, url_for
 import mysql.connector
 import re 
 import dictionary
+import os
+import socket
 
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -28,14 +30,30 @@ def lans(key):
     return data[key][default_language]
 
 ##############################
+def is_pythonanywhere():
+    """Check if running on PythonAnywhere"""
+    hostname = socket.gethostname()
+    return 'pythonanywhere' in hostname.lower() or os.environ.get('PYTHONANYWHERE_SITE', '') != ''
+
+##############################
 def db():
     try:
-        db = mysql.connector.connect(
-            host = "mariadb",
-            user = "root",  
-            password = "password",
-            database = "x"
-        )
+        if is_pythonanywhere():
+            # PythonAnywhere database configuration
+            db = mysql.connector.connect(
+                host = "MrPhilipMalik.mysql.eu.pythonanywhere-services.com",
+                user = "MrPhilipMalikk",  
+                password = "mySQLpassword",
+                database = "MrPhilipMalik$x"
+            )
+        else:
+            # Local database configuration
+            db = mysql.connector.connect(
+                host = "mariadb",
+                user = "root",  
+                password = "password",
+                database = "x"
+            )
         cursor = db.cursor(dictionary=True)
         return db, cursor
     except Exception as e:
