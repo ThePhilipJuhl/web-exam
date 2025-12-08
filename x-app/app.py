@@ -12,6 +12,7 @@ import x
 import dictionary
 import io
 import csv
+import config
 
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -154,7 +155,7 @@ def signup(lan = "english"):
             db.commit()
 
             # send verification email
-            email_verify_account = render_template("_email_verify_account.html", user_verification_key=user_verification_key)
+            email_verify_account = render_template("_email_verify_account.html", user_verification_key=user_verification_key, base_url=config.BASE_URL)
             ic(email_verify_account)
             x.send_email(user_email, "Verify your account", email_verify_account)
 
@@ -330,7 +331,7 @@ def forgot_password(lan = "english"):
                 db.commit()
 
                 # use the Send  email but with forgot password template
-                email_forgot_password = render_template("_email_forgot_password.html", user_password_reset_key=user_password_reset_key)
+                email_forgot_password = render_template("_email_forgot_password.html", user_password_reset_key=user_password_reset_key, base_url=config.BASE_URL)
                 x.send_email(user_email, "Reset your password", email_forgot_password)
 
           
