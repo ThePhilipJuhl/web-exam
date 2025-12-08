@@ -159,7 +159,7 @@ def signup(lan = "english"):
             ic(email_verify_account)
             x.send_email(user_email, "Verify your account", email_verify_account)
 
-            return f"""<mixhtml mix-redirect="{ url_for('login') }"></mixhtml>""", 400
+            return f"""<mixhtml mix-redirect="{ url_for('please_verify_email') }"></mixhtml>""", 400
         except Exception as ex:
             ic(ex)
             # User errors
@@ -300,6 +300,19 @@ def verify_account():
     finally:
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
+
+##############################
+@app.route("/please-verify-email", methods=["GET"])
+@app.route("/please-verify-email/<lan>", methods=["GET"])
+def please_verify_email(lan = "english"):
+    if lan not in x.allowed_languages: lan = "english"
+    x.default_language = lan
+    
+    # If user is already logged in, redirect to home
+    if session.get("user", ""): 
+        return redirect(url_for("home"))
+    
+    return render_template("please_verify_email.html", lan=lan)
 
 ##############################
 @app.route("/forgot-password", methods=["GET", "POST"])
