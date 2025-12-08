@@ -46,7 +46,7 @@ def db():
             # PythonAnywhere database configuration
             db = mysql.connector.connect(
                 host = "MrPhilipMalik.mysql.eu.pythonanywhere-services.com",
-                user = "MrPhilipMalikk",  
+                user = "MrPhilipMalik",  
                 password = "mySQLpassword",
                 database = "MrPhilipMalik$x"
             )
