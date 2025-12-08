@@ -286,15 +286,16 @@ def verify_account():
         cursor.execute(q, (user_verified_at, user_verification_key))
         db.commit()
         if cursor.rowcount != 1: raise Exception("Invalid key", 400)
-        return redirect( url_for('login') )
+        return render_template("verify_account_success.html")
     except Exception as ex:
         ic(ex)
         if "db" in locals(): db.rollback()
         # User errors
-        if ex.args[1] == 400: return ex.args[0], 400    
+        if len(ex.args) > 1 and ex.args[1] == 400: 
+            return render_template("verify_account_success.html", error=ex.args[0])
 
         # System or developer error
-        return "Cannot verify user"
+        return "Cannot verify user", 500
 
     finally:
         if "cursor" in locals(): cursor.close()
