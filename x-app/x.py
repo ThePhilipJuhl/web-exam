@@ -48,7 +48,7 @@ def db():
                 host = "MrPhilipMalik.mysql.eu.pythonanywhere-services.com",
                 user = "MrPhilipMalik",  
                 password = "mySQLpassword",
-                database = "MrPhilipMalik$x"
+                database = "MrPhilipMalik$x-exam"
             )
         else:
             # Local database configuration

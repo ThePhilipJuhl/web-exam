@@ -17,162 +17,162 @@
     "password": {
         "english": "password",
         "danish": "kodeord",
-        "spanish": "Blingblingblong"
+        "spanish": "contraseña"
     },
     "username": {
         "english": "username",
         "danish": "brugernavn",
-        "spanish": "brugerino"
+        "spanish": "nombre de usuario"
     },
     "first_name": {
         "english": "first name",
         "danish": "fornavn",
-        "spanish": "firstorino navnino"
+        "spanish": ""
     },
     "characters": {
         "english": "characters",
         "danish": "karaktere",
-        "spanish": "charactino olas"
+        "spanish": "personajes"
     },
     "signup_to_x": {
         "english": "sign up to x",
         "danish": "opret dig x ",
-        "spanish": "AAAH HVOR ER HAN"
+        "spanish": "Inscribirse la x"
     },
     "sign_up": {
         "english": "sign up",
         "danish": "opret dig x ",
-        "spanish": "SÅ HJÆLP MIG DOG"
+        "spanish": "inscribirse"
     },
     "invalid_email": {
         "english": "invalid email",
         "danish": "forkert email",
-        "spanish": "la emailia no correcto"
+        "spanish": ""
     },
     "invalid_password": {
         "english": "invalid password",
         "danish": "forkert password",
-        "spanish": "invalido passwordo"
+        "spanish": "contraseña no válida"
     },
     "invalid_credentials": {
         "english": "invalid credentials",
         "danish": "forkerte detailer ",
-        "spanish": "NOOO WRONG AHAHHA"
+        "spanish": "contraseña no válida"
     },
     "user_not_found": {
         "english": "user not found",
         "danish": "bruger ikke fundet",
-        "spanish": "chalala bitch"
+        "spanish": "usuario no encontrado"
     },
     "user_not_verified": {
         "english": "user not verified",
         "danish": "bruger ikke verificeret ",
-        "spanish": "kom again nonce"
+        "spanish": "Usuario no verificada"
     },
     "profile": {
         "english": "Profile",
         "danish": "Profil",
-        "spanish": "la profilio"
+        "spanish": "perfil"
     },
     "Notifications": {
         "english": "Notifications",
         "danish": "Notifikationer",
-        "spanish": "la notifiko"
+        "spanish": "notificación"
     },
     "Messages": {
         "english": "Messages",
         "danish": "Beskeder",
-        "spanish": "La beskedo"
+        "spanish": "mensajes"
     },
     "Bookmarks": {
         "english": "Bookmarks",
         "danish": "Bogmærkeringer",
-        "spanish": "labookimark"
+        "spanish": "marcadores"
     },
     "Jobs": {
         "english": "Jobs",
         "danish": "Job",
-        "spanish": "la getto job"
+        "spanish": "empleos"
     },
     "Communities": {
         "english": "Communities",
         "danish": "Fælleskab",
-        "spanish": "Fælleskabitto"
+        "spanish": "comunidades"
     },
     "Premium": {
         "english": "Premium",
         "danish": "Præmium",
-        "spanish": "Præmivito"
+        "spanish": "de primera calidad"
     },
     "Explore": {
         "english": "Explore",
         "danish": "Opdag",
-        "spanish": "Exploritto"
+        "spanish": "explorar"
     },
     "Search_X": {
         "english": "Search X",
         "danish": "Søg på X",
-        "spanish": "searchito xo"
+        "spanish": "buscar x"
     },
     "Whats_happening_now": {
-        "english": "Whats_happening_now",
+        "english": "Whats happening now",
         "danish": "Hvad sker der nu",
-        "spanish": "Whatso happeningo "
+        "spanish": "¿Qué está pasando ahora?"
     },
     "More_news": {
-        "english": "More_news",
+        "english": "More news",
         "danish": "Flere nyheder",
-        "spanish": "moro newso "
+        "spanish": "Más noticias"
     },
     "Who_to_follow": {
         "english": "Who to follow",
         "danish": "Hvem skal du følge",
-        "spanish": "hvororo followo"
+        "spanish": "a quien seguir"
     },
     "Show_more": {
         "english": "Show more ",
         "danish": "vis flere",
-        "spanish": "showowowo morro"
+        "spanish": "mostrar más"
     },
     "More": {
         "english": "More ",
         "danish": "Mere",
-        "spanish": "Mororoor"
+        "spanish": "más"
     },
     "Logout": {
         "english": "Logout",
         "danish": "Log ud ",
-        "spanish": "logogo outto"
+        "spanish": "finalizar la sesión"
     },
     "Search": {
         "english": "Search",
         "danish": "Søg",
-        "spanish": "Searcho mucho"
+        "spanish": "buscar"
     },
     "Post": {
         "english": "Post",
         "danish": "Slå op ",
-        "spanish": "Sloch mocho"
+        "spanish": "correo"
     },
     "have_an_account": {
         "english": "Already have an account",
         "danish": "Har du allerede en konto?",
-        "spanish": "Tienes mucho conto"
+        "spanish": "¿Ya tienes una cuenta?"
     },
     "update_profile": {
         "english": "Update Profile",
         "danish": "Opdater profil",
-        "spanish": "Opdalotcho profilo"
+        "spanish": "actualizar perfil"
     },
     "delete": {
         "english": "delete",
         "danish": "slet ",
-        "spanish": "Sletcho"
+        "spanish": "borrar"
     },
     "delete_profile": {
         "english": "Delete Profile",
         "danish": "Slet Profil",
-        "spanish": "SLetcho profilo"
+        "spanish": "eliminar perfil"
     },
     "delete_profile_warning": {
         "english": "Deleting account will permanently delete your account and all associated data.",
