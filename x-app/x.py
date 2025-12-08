@@ -19,13 +19,17 @@ ic.configureOutput(prefix=f'----- | ', includeContext=True)
 
 UPLOAD_ITEM_FOLDER = './images'
 
+# Get the directory where this script is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 ##############################
 allowed_languages = ["english", "danish", "spanish"]
 google_spread_sheet_key = "1z9MLA8hA2Ry8nnUl3HVk3CvYwLZQoe3ePFwgC_PaLJU"
 default_language = "english"
 
 def lans(key):
-    with open("dictionary.json", 'r', encoding='utf-8') as file:
+    dictionary_path = os.path.join(BASE_DIR, "dictionary.json")
+    with open(dictionary_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     return data[key][default_language]
 
