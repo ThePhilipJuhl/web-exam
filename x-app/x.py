@@ -33,7 +33,7 @@ def lans(key):
         data = json.load(file)
     return data[key][default_language]
 
-##############################
+##############################ai check if running on PythonAnywhere didnt work at all
 def is_pythonanywhere():
     """Check if running on PythonAnywhere"""
     hostname = socket.gethostname()
