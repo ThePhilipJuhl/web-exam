@@ -333,7 +333,7 @@ def forgot_password(lan = "english"):
             cursor.execute(q, (user_email,))
             user = cursor.fetchone()
 
-            # i wont  reveal if user exists or not (security ) so if the user exist send email if not dont send anything
+            # it wont reveal if user exists or not (security ) so if the user exist send email if not dont send anything
             if user:
                 # Generate password reset key
                 user_password_reset_key = uuid.uuid4().hex

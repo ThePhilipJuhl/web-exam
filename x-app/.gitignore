@@ -1,14 +1,11 @@
-# Configuration files with sensitive data
+# Configuration files with sensitive data, so i dont expose my mail and password in the source code to git hub 
 config.py
 
-# Python cache
+# Python cache takes a lot of space so i ignore it
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Flask session files
+# Flask session files takes a lot of space so i ignore it
 flask_session/
 
-# Environment variables
-.env
-.env.local
