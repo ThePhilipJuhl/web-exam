@@ -51,7 +51,7 @@ def db():
                 database = "MrPhilipMalik$x-exam"
             )
         else:
-            # Local database configuration
+            # Local database configuration if not on PythonAnywhere
             db = mysql.connector.connect(
                 host = "mariadb",
                 user = "root",  

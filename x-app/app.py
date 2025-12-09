@@ -49,7 +49,6 @@ def global_variables():
         x = x
     )
 
-###testing###
 ##############################
 @app.route("/login", methods=["GET", "POST"])
 @app.route("/login/<lan>", methods=["GET", "POST"])
@@ -457,68 +456,6 @@ def logout():
     finally:
         pass
 
-
-
-# ##############################
-# @app.get("/home-comp")
-# def home_comp():
-#     try:
-
-#         user = session.get("user", "")
-#         if not user: 
-#             return "error"
-
-#         db, cursor = x.db()
-#         q = """
-#         SELECT
-#             users.*,
-#             posts.*,
-#             EXISTS(
-#                 SELECT 1 
-#                 FROM likes 
-#                 WHERE likes.like_post_fk = posts.post_pk 
-#                   AND likes.like_user_fk = %s
-#             ) AS has_liked,
-#             (
-#                 SELECT COUNT(*) 
-#                 FROM likes 
-#                 WHERE likes.like_post_fk = posts.post_pk
-#             ) AS like_count
-#         FROM users
-#         JOIN posts ON user_pk = post_user_fk
-#         ORDER BY RAND()
-#         LIMIT 5
-#         """
-#         cursor.execute(q, (user["user_pk"],))
-#         tweets = cursor.fetchall()
-#         ic(tweets)
-
-#         Fetch comments for each tweet with user info
-#         for tweet in tweets:
-#             q_comments = """
-#             SELECT 
-#                 comment.*,
-#                 users.user_first_name,
-#                 users.user_last_name,
-#                 users.user_username,
-#                 users.user_avatar_path
-#             FROM comment
-#             JOIN users ON comment.comment_user_fk = users.user_pk
-#             WHERE comment.comment_post_fk = %s 
-#               AND comment.comment_deleted_at IS NULL
-#             ORDER BY comment.comment_created_at DESC
-#             LIMIT 3
-#             """
-#             cursor.execute(q_comments, (tweet["post_pk"],))
-#             tweet["comments"] = cursor.fetchall()
-
-#         html = render_template("_home_comp.html", tweets=tweets)
-#         return f"""<mixhtml mix-update="main">{ html }</mixhtml>"""
-#     except Exception as ex:
-#         ic(ex)
-#         return "error"
-#     finally:
-#         pass
 
 
 ##############################
@@ -1329,37 +1266,3 @@ def api_create_comment():
         if "cursor" in locals(): cursor.close()
         if "db" in locals(): db.close()
 ##############################################################
-# old version fetching from a api get comment not working 
-# @app.get("/api-get-comments")
-# def api_get_comments():
-#   try:
-#     post_pk = request.args.get("post_pk", "").strip()
-#     if not post_pk:
-#       return "invalid post", 400
-
-#     db, cursor = x.db()
-
-#     q = """
-#     SELECT 
-#         comment.*,
-#         users.user_first_name,
-#         users.user_last_name,
-#         users.user_username,
-#         users.user_avatar_path
-#     FROM comment
-#     JOIN users ON comment.comment_user_fk = users.user_pk
-#     WHERE comment.comment_post_fk = %s 
-#       AND comment.comment_deleted_at IS NULL
-#     ORDER BY comment.comment_created_at DESC
-#     LIMIT 3
-#     """
-#     cursor.execute(q, (post_pk,))
-#     comments = cursor.fetchall()  
-#     return render_template("_comments.html", comments=comments)
-#   except Exception as ex:
-#     ic(ex)
-#     return "System under maintenance", 500
-#   finally:
-#     if "cursor" in locals(): cursor.close()
-#     if "db" in locals(): db.close()
-
